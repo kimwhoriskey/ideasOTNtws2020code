@@ -1,4 +1,4 @@
-![ideasOTN](ideasOTN.png) 
+![ideasOTN](ideasOTN.png =100) 
 ## Telemetry Workshop Series 2020
 ## Coding Workshops
 
