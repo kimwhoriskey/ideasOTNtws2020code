@@ -1,4 +1,5 @@
-![ideasOTN](ideasOTN.png =100) 
+<img src="ideasOTN.png" width="40%">
+![ideasOTN](ideasOTN.png | width=100) 
 ## Telemetry Workshop Series 2020
 ## Coding Workshops
 
