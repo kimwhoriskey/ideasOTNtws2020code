@@ -10,7 +10,8 @@ require(igraph)
 require(ggraph)
 require(mgcv)
 
-seaTrout <- read.csv("C:/Users/rle061.UIB/Downloads/seaTrout.csv")
+# seaTrout <- read.csv("ideasOTNtws2020code/rl_intro/seaTrout.csv")
+load("seaTrout.rda")
 
 str(seaTrout)
 glimpse(seaTrout)
