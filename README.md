@@ -8,7 +8,7 @@ The following code will be used in the Telemetry Workshop Series held at Dalhous
 - Introduction to visualizing and analyzing telemetry data in R with dplyr and ggplot2 (author: Rob Lennox)
 - Introduction to the glatos package (author: Ryan Gosse)
 - Practically accounting for measurement error in acoustic telemetry (author: Jake Brownscombe)
-- Predicting spatially continuous locations from discrete detection data using YAPS (author: Henrik Baktoft)
+- High-resolution 2D/3D track estimation using YAPS (author: Henrik Baktoft)
 - Introduction to HMMs using moveHMM and markmodmover (author: Kim Whoriskey)
 
 ## Getting Started
