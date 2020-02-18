@@ -1,0 +1,56 @@
+YAPS - Yet Another Positioning Solver  
+OTN Telemetry Workshop Series, Dalhousie University, Halifax, Canada
+================
+
+[![](rmds/yaps_logo_hex_100px.png)](https://github.com/baktoft/yaps)
+![](rmds/otn_logo.png)
+
+-----
+
+Sorry for the upload to github being a bit late\!
+
+Please make sure that these packages are installed.
+
+``` r
+install.packges(c('data.table',
+                  'devtools', 
+                  'dplyr',
+                  'sp',
+                  'leaflet',
+                  'lubridate',
+                  'ggplot2',
+                  'caTools',
+                  'viridis')
+```
+
+Please take a look at the TMB pages for info on installing TMB:
+<https://github.com/kaskr/adcomp/wiki/Download> Most often, this line
+works `install.packages("TMB", type = "source")`
+
+Then install yaps from github, load it and check it is working. For this
+workshop, make sure to grab the ‘dev\_ows’ branch i.e. `ref='dev_ows'`
+
+``` r
+devtools::install_github('baktoft/yaps', ref='dev_ows')
+library(yaps)
+testYaps()
+```
+
+If the last line returned a plot of a simple track with overlapping
+black and red lines, everything should be working.
+
+You are also encouraged to take a look at the yaps readme:
+<https://github.com/baktoft/yaps>
+
+If you can’t get enough of YAPS have a look at the original paper:  
+[Positioning of aquatic animals based on time-of-arrival and random walk
+models using YAPS (Yet Another Positioning
+Solver)](https://www.nature.com/articles/s41598-017-14278-z.pdf)
+
+And the recent pre-print including a step-by-step guide: [Opening the
+black box of fish tracking using acoustic
+telemetry](https://www.biorxiv.org/content/10.1101/2019.12.16.877688v1)
+
+To keep updated, make sure to follow YAPS on
+[github](https://github.com/baktoft/yaps) and
+[researchgate](https://www.researchgate.net/project/YAPS-open-source-high-resolution-fish-tracking)
