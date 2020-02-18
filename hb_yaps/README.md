@@ -7,8 +7,6 @@ OTN Telemetry Workshop Series, Dalhousie University, Halifax, Canada
 
 -----
 
-Sorry for the upload to github being a bit late\!
-
 Please make sure that these packages are installed.
 
 ``` r
@@ -39,7 +37,24 @@ testYaps()
 If the last line returned a plot of a simple track with overlapping
 black and red lines, everything should be working.
 
-You are also encouraged to take a look at the yaps readme:
+-----
+
+The code for this part of the workshop is available in two formats - the
+code should be identical. All relevant files are found in the `rmds`
+folder.
+
+  - ye good olde R-script
+      - `rmds/otn_part1_setupAndTest.R`
+      - `rmds/otn_part2_crayfish.R`
+      - `rmds/otn_part3_hald.R`
+  - fancy-pants R-notebooks
+      - `rmds/otn_part1_setupAndTest.nb.html`
+      - `rmds/otn_part2_crayfish.nb.html`
+      - `rmds/otn_part3_hald.nb.html`
+
+-----
+
+You are encouraged to take a look at the yaps readme:
 <https://github.com/baktoft/yaps>
 
 If you can’t get enough of YAPS have a look at the original paper:  
@@ -54,3 +69,5 @@ telemetry](https://www.biorxiv.org/content/10.1101/2019.12.16.877688v1)
 To keep updated, make sure to follow YAPS on
 [github](https://github.com/baktoft/yaps) and
 [researchgate](https://www.researchgate.net/project/YAPS-open-source-high-resolution-fish-tracking)
+
+## Sorry for the upload to github being a bit late\!
