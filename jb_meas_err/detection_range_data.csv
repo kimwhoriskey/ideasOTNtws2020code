@@ -1,0 +1,46 @@
+"","station","habitat","benthos","distm","depthm","tide","det","DE","DEp"
+"1","BTT17","bank","sand",50,2.1336,"low incoming",12,100,1
+"2","BTT17","bank","sand",100,2.4384,"low incoming",12,100,1
+"3","BTT17","bank","sand",150,1.8288,"low incoming",12,100,1
+"4","BTT17","bank","sand",197,1.524,"low incoming",11,91.66666667,0.9166666667
+"5","BTT17","bank","sand",249,0.9144,"low incoming",14,100,1
+"6","BTT17","bank","sand",300,0.9144,"low incoming",2,16.66666667,0.1666666667
+"7","BTT7","basin","seagrass",59,2.1336,"mid incoming",11,91.66666667,0.9166666667
+"8","BTT7","basin","seagrass",102,2.1336,"mid incoming",1,8.333333333,0.08333333333
+"9","BTT7","basin","seagrass",154,2.4384,"mid incoming",0,0,0
+"10","BTT18","channel","mixed, rugose",5,2.4384,"high incoming",12,100,1
+"11","BTT18","channel","mixed, rugose",45,2.4384,"high incoming",6,50,0.5
+"12","BTT18","channel","mixed, rugose",99,2.4384,"high incoming",0,0,0
+"13","BTT27","bank","sand",65,2.4384,"high",12,100,1
+"14","BTT27","bank","sand",40,2.7432,"high",13,100,1
+"15","BTT27","bank","sand",108,3.3528,"high",14,100,1
+"16","BTT27","bank","sand",167,3.9624,"high",11,91.66666667,0.9166666667
+"17","BTT27","bank","sand",228,3.9624,"high",9,75,0.75
+"18","BTT27","bank","sand",350,3.9624,"high",2,16.66666667,0.1666666667
+"19","BTT13","basin","seagrass",17,2.4384,"high outgoing",13,100,1
+"20","BTT13","basin","seagrass",43,2.4384,"high outgoing",12,100,1
+"21","BTT13","basin","seagrass",91,2.4384,"high outgoing",4,33.33333333,0.3333333333
+"22","BTT13","basin","seagrass",146,2.286,"high outgoing",2,16.66666667,0.1666666667
+"23","BTT13","basin","seagrass",194,2.286,"high outgoing",0,0,0
+"24","BTT54","channel","sand",12,2.7432,"mid incoming",14,100,1
+"25","BTT54","channel","sand",61,3.048,"mid incoming",11,91.66666667,0.9166666667
+"26","BTT54","channel","sand",111,3.6576,"mid incoming",13,100,1
+"27","BTT54","channel","sand",159,4.2672,"mid incoming",7,58.33333333,0.5833333333
+"28","BTT54","channel","sand",210,3.6576,"mid incoming",7,58.33333333,0.5833333333
+"29","BTT54","channel","sand",264,3.6576,"mid incoming",10,83.33333333,0.8333333333
+"30","BTT54","channel","sand",324,3.9624,"mid incoming",5,41.66666667,0.4166666667
+"31","BTT54","channel","sand",429,3.9624,"mid incoming",4,33.33333333,0.3333333333
+"32","BTT37","bank","seagrass, coral",17,2.7432,"mid outgoing",12,100,1
+"33","BTT37","bank","seagrass, coral",47,2.7432,"mid outgoing",12,100,1
+"34","BTT37","bank","seagrass, coral",100,2.4384,"mid outgoing",2,16.66666667,0.1666666667
+"35","BTT37","bank","seagrass, coral",144,2.1336,"mid outgoing",6,50,0.5
+"36","BTT37","bank","seagrass, coral",195,2.1336,"mid outgoing",0,0,0
+"37","BTT37","bank","seagrass, coral",238,2.1336,"mid outgoing",1,8.333333333,0.08333333333
+"38","BTT46","basin","seagrass",6,1.524,"low outgoing",15,100,1
+"39","BTT46","basin","seagrass",49,1.524,"low outgoing",11,91.66666667,0.9166666667
+"40","BTT46","basin","seagrass",103,1.524,"low outgoing",12,100,1
+"41","BTT46","basin","seagrass",157,1.8288,"low outgoing",3,25,0.25
+"42","BTT46","basin","seagrass",206,1.8288,"low outgoing",0,0,0
+"43","BTT49","channel","mixed, rugose",10,3.048,"low outgoing",12,100,1
+"44","BTT49","channel","mixed, rugose",60,2.1336,"low outgoing",3,25,0.25
+"45","BTT49","channel","mixed, rugose",100,2.1336,"low outgoing",0,0,0
