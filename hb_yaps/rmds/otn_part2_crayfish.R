@@ -1,3 +1,7 @@
+# YAPS - Yet Another Positioning Solver
+# OTN Telemetry Workshop Series, Dalhousie University, Halifax, Canada
+# Part 2 - Norwegian crayfish
+# Henrik Baktoft, DTU - hba@aqua.dtu.dk
  
 # Setup and needed libraries
 # Set timezone to UTC and load needed libraries

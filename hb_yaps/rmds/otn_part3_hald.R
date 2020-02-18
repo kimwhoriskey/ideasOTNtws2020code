@@ -1,7 +1,7 @@
 # YAPS - Yet Another Positioning Solver
 # OTN Telemetry Workshop Series, Dalhousie University, Halifax, Canada
 # Part 3 - Danish pike in a large lake
-
+# Henrik Baktoft, DTU - hba@aqua.dtu.dk
 
 # Setup and needed libraries
 # Set timezone to UTC and load needed libraries
@@ -102,7 +102,7 @@ plotNobs(toa_tow)
 
 ### Get `inp` and run YAPS
 inp_tow <- getInp(toa=toa_tow, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType="sbi", sdInits=1, ss_data_what="est", ss_data=0, biTable=NULL)
-yaps_tow <- runYaps(inp_tow, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
+yaps_tow <- runYaps(inp_tow, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 ### Results
 plotYaps(inp_tow, yaps_tow)
@@ -186,6 +186,8 @@ par(mfrow=c(1,1))
 # One reason we can estimate a decent track even with max_hydro = 1 is, that multiple hydrophones are detecting the signals. It will, of course, not work if there only was a single hydrophone in the water. 
 
 
+## Tag 1335 - pike - random BI sequence - assuming **secret** sequence
+## Tag 1335 - pike - random BI sequence - assuming **secret** sequence
 ## Tag 1335 - pike - random BI sequence - assuming **secret** sequence
 # Remember this transmitter is a random burst interval (BI 10 - 30 s), but we know the burst sequence. However, first we assume, we don't and treat it like a random BI trasnmitter with secret burst sequence.
 ### Compiling the data
@@ -280,7 +282,7 @@ plotNobs(toa1335_kbi_yaps)
 ### Get inp and run YAPS
 # Note, that ping_type now is `'pbi'`and we include the BItable in `getInp()`. Everything else is the same as above.
 inp1335_kbi <- getInp(toa=toa1335_kbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1335)
-
+inp1335_kbi$inits[1] <- 1
 yaps1335_kbi <- runYaps(inp1335_kbi, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
 
 ### Results
@@ -317,7 +319,7 @@ max_hydro <- 3
 toa1335_kbi_down3 <- downSampleToa(toa1335_kbi_yaps, max_hydro)
 
 inp1335_kbi_down3 <- getInp(toa=toa1335_kbi_down3, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1335)
-
+inp1335_kbi_down3$inits[1] <- 1
 yaps1335_kbi_down3 <- runYaps(inp1335_kbi_down3, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
 
 plotYaps(inp1335_kbi_down3, yaps1335_kbi_down3)
@@ -337,8 +339,8 @@ max_hydro <- 1
 toa1335_kbi_down1 <- downSampleToa(toa1335_kbi_yaps, max_hydro)
 
 inp1335_kbi_down1 <- getInp(toa=toa1335_kbi_down1, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1335)
-
-yaps1335_kbi_down1 <- runYaps(inp1335_kbi_down1, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
+inp1335_kbi_down1$inits[1] <- 1
+yaps1335_kbi_down1 <- runYaps(inp1335_kbi_down1, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 # zoom in 
 plotYaps(inp1335_kbi_down1, yaps1335_kbi_down1, xlim=c(520500, 521500), ylim=c(6247400, 6247800))
@@ -428,7 +430,7 @@ sum(nobs>=3) / length(nobs)
 # get inp to feed into YAPS and run YAPS
 inp1315_rbi <- getInp(toa=toa1315_rbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=NULL)
 inp1315_rbi$inits[1] <- 1
-yaps1315_rbi <- runYaps(inp1315_rbi, maxIter=1000, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
+yaps1315_rbi <- runYaps(inp1315_rbi, maxIter=1000, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 
 # basic plotting
@@ -472,7 +474,7 @@ sum(getNobs(toa1315_kbi_yaps) >= 3) / nrow(toa1315_kbi_yaps)
 # get inp to feed into YAPS and run YAPS
 inp1315_kbi <- getInp(toa=toa1315_kbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1315)
 inp1315_kbi$inits[1] <- 1
-yaps1315_kbi <- runYaps(inp1315_kbi, maxIter=1000, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
+yaps1315_kbi <- runYaps(inp1315_kbi, maxIter=1000, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 
 # basic plotting

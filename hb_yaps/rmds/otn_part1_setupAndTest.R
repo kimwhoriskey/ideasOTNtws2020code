@@ -1,3 +1,8 @@
+# YAPS - Yet Another Positioning Solver
+# OTN Telemetry Workshop Series, Dalhousie University, Halifax, Canada
+# Part 1 - installation, test and a quick example
+# Henrik Baktoft, DTU - hba@aqua.dtu.dk
+
 ## Installation
 # If not already installed, please install `TMB` (Template Model Builder) and devtools. Then make sure you have the latest version of `yaps` installed. These steps are only needed once.
 
