@@ -22,6 +22,21 @@ git clone https://github.com/kimwhoriskey/ideasOTNtws2020code
 ## Prereqs
 You will need R to work through these coding lectures. You may also find RStudio helpful (or some other environment). We will be using several packages - you can run the following code to install them. 
 
+For all lectures: 
+```
+install.packages(c('tidyverse','marmap','lubridate','gganimate','gifski','rgeos','argosfilter','nlme','igraph',
+'ggraph','mgcv','ggplot2','ggmap','reshape2','dplyr','randomForest','TMB','rgdal','moveHMM',
+'circular','gridExtra','data.table','devtools','sp','leaflet','caTools','viridis','raster',
+'mapdata','maptools','maps','remotes'))
+devtools::install_github("lawlerem/markmodmover", build_vignettes=TRUE)
+devtools::install_github('baktoft/yaps', ref='dev_ows')
+devtools::install_github("rossdwyer/VTrack")
+library(remotes)
+install_url("https://gitlab.oceantrack.org/GreatLakes/glatos/repository/master/archive.zip",
+            build_opts = c("--no-resave-data", "--no-manual"))      
+```
+
+
 For Rob's lecture: 
 ```
 install.packages("tidyverse")
@@ -53,10 +68,12 @@ install.packages("ggplot2")
 install.packages("dplyr") 
 install.packages("TMB")
 install.packages("rgdal")
-devtools::install_github("TheoMichelot/moveHMM", build_vignettes=TRUE)
+install.packages("moveHMM")
 devtools::install_github("lawlerem/markmodmover", build_vignettes=TRUE)
 install.packages('circular')
 install.packages('gridExtra')
 ```
+
+For Henrik and Ryan's lectures, check out the README files in their folders. 
 
 Have fun!
