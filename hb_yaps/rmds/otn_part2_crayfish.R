@@ -1,0 +1,343 @@
+# YAPS - Yet Another Positioning Solver
+# OTN Telemetry Workshop Series, Dalhousie University, Halifax, Canada
+# Part 2 - Norwegian crayfish
+# Henrik Baktoft, DTU - hba@aqua.dtu.dk
+ 
+# Setup and needed libraries
+# Set timezone to UTC and load needed libraries
+rm(list=ls())
+Sys.setenv(TZ='UTC')
+library(sp)
+library(data.table)
+library(leaflet)
+library(lubridate)
+library(ggplot2)
+library(caTools)
+library(viridis)
+library(yaps)
+
+
+# Description
+# These data on European crayfish (as known as noble crayfish, *Astacus astacus*) were collected by [Jan G. Davidsen](https://www.ntnu.edu/employees/jan.davidsen) and colleagues in a small Norwegian lake near Trondheim (NO) (Kyvatnet). The hydrophone array consisted of eight TBR700 from Thelma Biotel. The transmitters used had very long burst intervals (170 - 310 s).  
+# These data are not part of the `yaps` package, so we need to load them from external files. 
+
+load('../data/cray3435.rda')
+load('../data/syncs.rda')
+ls()
+
+# Synchronizing the crayfish data
+## Preparing data for sync
+### Detections of sync tags
+# A bit of data massage needed...
+
+# - get rid of crazy colnames
+# - make sure the order of data is correct
+# - extract milli-second info from column epofrac
+head(syncs)
+dat_sync <- data.table(syncs)
+
+colnames(dat_sync) <- c('ts','epofrac','tag', 'data','protocol','snr','serial')
+
+setorder(dat_sync, cols=ts)
+
+dat_sync[, epo := floor(epofrac)]
+dat_sync[, frac := epofrac - epo]
+
+# There are some real-world issues in the data... The TBR700 can detect multiple protocols and frequencies and sometimes get false detections. In this study only protocol S256 on 69 kHz is used for the sync tags - the rest is noise.
+table(dat_sync$protocol)
+dat_sync <- dat_sync[protocol=='S256-69kHz']
+
+# These are somewhat old data and are affected by a bug in previous TBR700 firmware, which caused internal time to reset if batteries ran out. Therefore, some detections are dated in year 2000. These are deleted.
+dat_sync[, range(ts)]
+dat_sync <- dat_sync[ts >= '2016-01-01'] 
+
+# The sync tag data should now be ready.
+head(dat_sync)
+
+
+
+
+### The hydrophone data
+# Also a bit of massage needed...
+
+# - Coordinates are in lon/lat - good for `leaflet` maps, but needs to be UTM for `yaps`. Functions in package `sp` can be used to easily transform between projections - you just need to know EPSG codes for the original and target projections.  
+# - Sync tags 45, 46 and 47 were co-located with hydros 147, 150 and 274.
+# - Add an index
+# - Depth of the hydros are assumed to be 3 meter from the surface
+coordinates(recs) <- ~lon + lat
+proj4string(recs) <- CRS("+init=epsg:4326")
+recs_utm <- as.data.frame(spTransform(recs, CRS("+init=epsg:32632")))
+
+hydros <- data.table(x=recs_utm$lon, y=recs_utm$lat, z=3, serial=recs_utm$rec)
+hydros[serial %in% c(147, 150, 274), sync_tag:=c(45,46,47)]
+
+hydros[, idx:=1:.N]
+
+# Plot the hydrophone array and add labels for hydro_idx (left), hydro serial (top) and sync_tag (bottom).
+plot(y~x, data=hydros, asp=1)
+text(y~x, data=hydros, label=idx, pos=2)
+text(y~x, data=hydros, label=serial, pos=3)
+text(y~x, data=hydros[!is.na(sync_tag)], label=sync_tag, pos=1)
+points(y~x, data=hydros[!is.na(sync_tag)], pch=20, col="red")
+
+# Seems to be very straightforward, but plotting in context reveals some issues.  
+
+m <- leaflet(data=recs)
+m <- addTiles(m)
+m <- addCircles(m, data=recs, label=as.character(hydros$serial), radius=2)
+m <- addCircles(m, data=recs[!is.na(hydros$sync_tag), ], col="red", radius=2)
+m <- addMeasure(m, primaryLengthUnit="meters")
+m <- addLabelOnlyMarkers(m , label=as.character(hydros$serial), labelOptions=labelOptions(noHide=TRUE, textOnly=TRUE, textsize="15px"))
+m
+
+### Issues in the sync data - the obvious ones
+# For instance, the sync tag on hydro 8 (S47) does not have direct line-of-sight to hydro 1 and 7 (H141 and H273), but detections might still occur. It is a very good idea to  get get rid of such obvious non-line-of-sight detections. Also note that the line from S45 -> H146 is very close to land, which may cause problems. Preliminary analyses shows that these sync-hydro combos will cause issues in the sync process, but we leave them in for now to see the effects. Future versions of `yaps` will have a function to identify problematic combos based on positions and a shape-file of the study area.
+
+with(dat_sync, table(serial, tag))
+dat_sync <- dat_sync[!(serial==141 & tag==47) & !(serial==273 & tag==47)]
+with(dat_sync, table(serial, tag))
+
+
+# Time to visualize the sync data. Make a temporary `data.table` to plot data density through time.
+dat_sync[ , day:=floor_date(ts, unit="day")]
+temp1 <- dat_sync[, .N, by=c('tag' ,'serial', 'day')]
+ggplot(data=temp1, aes(x=day, y=factor(serial))) + geom_tile(aes(fill=N)) + facet_grid(tag~.) + scale_fill_viridis()
+
+# Notice that end dates are quite variable - for this purpose, we don't want to go beyond a fully functional array, so we truncate at April 1st 2017.
+dat_sync <- dat_sync[ts < '2017-04-01']
+
+
+# Quite often, some crazy stuff goes on in the beginning of a deployment, e.g. hydros are deployed at different times/days, they "settle in" or get moved to adjust positions. We have no field notes from this deployment, so need to take a closer look. All tags from Thelma are programmed to ping every whole second - this can be exploited to visualize and get a feeling for the data very easy. The plot below shows fractions of seconds (i.e. column `frac`) for all sync tag detections faceted by tag and hydro. The variation in line slopes between hydros for each sync tag is a direct visualization of the drift of the internal clocks in the hydros. If all hydros were perfectly synced, slopes would be identical within each sync tag, but might vary between sync tag.
+temp2 <- dat_sync[ts %between% c('2016-08-01', '2016-09-10')] 
+ggplot(data=temp2) + geom_point(aes(x=ts, y=frac), pch=20) + facet_grid(serial~tag)
+
+# Indeed, something seems to happend on all hydros in the very beginning, so we discard data from the first day or two. Normally you would define study start based on when all hydros were in positions - we don't have the field notes for this study, so we just discard the first day.
+dat_sync <- dat_sync[ts >= '2016-08-19 00:00']
+
+## Fitting the sync model - first attempt
+# There are more issues identified in the plot above, but we try to fit the sync model to the data as they are now. Running the sync model on the complete data can take some (=long) time, so we only use a subset here.
+detections <- dat_sync[ts < '2016-10-01', c('ts', 'tag', 'epo', 'frac', 'serial')]
+
+# Compile the data as a `list` with two objects `detections` and `hydros`
+cray <- list(detections=detections, hydros=hydros)
+
+# Set the parameters for the sync mode, compile input data using `getInpSync()`, get the sync model using `getSyncModel()`...
+# set sync parameters 
+# look in ?getInpSync for details...
+max_epo_diff <- 150
+min_hydros <- 3
+time_keeper_idx <- 3
+fixed_hydros_idx <- c(1,2,3,4,5,6,7,8)
+n_offset_day <- 1
+n_ss_day <- 1
+keep_rate <- 0.25
+
+inp_sync <- getInpSync(sync_dat=cray, max_epo_diff, min_hydros, time_keeper_idx, 
+    fixed_hydros_idx, n_offset_day, n_ss_day, keep_rate=keep_rate)
+
+sync_model <- getSyncModel(inp_sync, silent=TRUE, fine_tune=FALSE)
+
+### More issues in the sync data - the hidden ones
+# As noted above, there are more issues in these data. Make some diagnostic plots of the first sync_model.
+plotSyncModelResids(sync_model, by='overall')
+plotSyncModelResids(sync_model, by='quantiles')
+plotSyncModelResids(sync_model, by='sync_tag')      
+plotSyncModelResids(sync_model, by='hydro')         
+
+# Overll it looks decent, but something is not spot on for sync_idx 6 @ hydro_idx 1, sync_idx 3 @ hydro_idx 5, sync_idx 8 @ hydro_idx 2 and sync_idx 8 @ hydro_idx 5. In terms of serials it is equivalent to S46 @ H 141, S45 @ H149, S47 @ H146 and S47 @ H149. Quick solution is to just remove these pairs, but let's try to figure out what is going on. 
+
+#### S_idx6 @ H_idx 1 (S46 @ H 141)
+ggplot(data=dat_sync[tag==46 & serial==141]) + geom_point(aes(x=ts, y=frac), pch=20)
+
+# Looks really dodgy - no clue what is going on! Plots of S46 on other hydros as well as other sync tags on H141 does not have this pattern. Last part might be useful, but there is plenty of sync data so for now we just get rid of it all and refit the sync model.
+dat_sync <- dat_sync[!(tag==46 & serial == 141)]
+
+
+#### S_idx3 @ H_idx5 (S45 @ H149)
+ggplot(data=temp2[tag==45 & serial==149]) + geom_point(aes(x=ts, y=frac), pch=20)
+
+# Seems a bit wobbly and also a bit sparse. Let's have a closer look. The code below identifies consequtive pings and compares the difference in `frac`. This only works if data allows it - i.e. ping number is needed and `frac`needs to be meaningfull and not completely random as is the case from other manufacturers.
+temp2[, delta_frac:=c(diff(frac), NA), by=c('tag', 'serial')]
+temp2[, delta_ping:=c(diff(data), NA), by=c('tag', 'serial')]
+
+ggplot(data=temp2[delta_ping==1 & abs(delta_frac) < 0.9, ], aes(x=ts, y=delta_frac*1450)) + geom_point(pch=20) + facet_grid(serial~tag)
+
+# Note the triple bands in S45 @ H149. These corresponds very well to multipath propagated signals, if signals bounces off the concrete(?) structure in the southern end. The t-distribution can handle this (up to a certain amount), but we might as well get rid of it. Again, we have plenty of sync data, so we just discard this combination.
+dat_sync <- dat_sync[!(tag==45 & serial==149)]
+
+
+
+#### S_idx8 @ H_idx2 (S47 @ H146)
+# Look at the map. No line of sight between these two...
+dat_sync <- dat_sync[!(tag==47 & serial == 146)]
+
+
+
+#### S_idx8 @ H_idx5 (S47 @ H149)
+ggplot(data=temp2[tag==47 & serial==149]) + geom_point(aes(x=ts, y=frac), pch=20)
+
+# Very sparse - basically not enough data to be usefull. A future function in `yaps` is aimed at catching this before fitting the sync model.
+
+dat_sync <- dat_sync[!(tag==47 & serial == 149)]
+
+
+## Re-fitting the sync model
+detections <- dat_sync[ts < '2016-10-01', c('ts', 'tag', 'epo', 'frac', 'serial')]
+cray <- list(detections=detections, hydros=hydros)
+
+inp_sync <- getInpSync(sync_dat=cray, max_epo_diff, min_hydros, time_keeper_idx, 
+    fixed_hydros_idx, n_offset_day, n_ss_day, keep_rate=keep_rate)
+sync_model <- getSyncModel(inp_sync, silent=TRUE, fine_tune=FALSE)
+
+plotSyncModelResids(sync_model, by='overall')
+plotSyncModelResids(sync_model, by='quantiles')       
+plotSyncModelResids(sync_model, by='sync_tag')      
+plotSyncModelResids(sync_model, by='hydro')
+
+
+
+
+# There might be room for further improvement, but it looks decent for now. Before proceeding, let's have a closer look at the synced data.  
+
+# First we apply the sync model to all sync data and take a look at the difference between original data `epofrac` and the synced data `eposync`
+detections_synced <- applySync(toa=cray$detections, hydros=cray$hydros, sync_model)
+
+detections_synced[, sync:= eposync - epofrac]
+detections_synced[, sync_frac:= eposync - floor(eposync)]
+
+ggplot(data=detections_synced) + geom_line(aes(x=ts, y=sync)) + facet_grid(tag~serial)
+
+# We can also take a look at `frac` of the un-synced vs synced
+ggplot(data=dat_sync[ts <= '2016-09-10']) + geom_point(aes(x=ts, y=frac, col=factor(serial)), pch=20) + facet_grid(tag~. )
+ggplot(data=detections_synced[ts <= '2016-09-10']) + geom_point(aes(x=ts, y=sync_frac, col=factor(serial)), pch=20) + facet_grid(tag~.)
+
+# Looks good, we can proceed to apply the sync model to the crayfish data
+
+## Apply sync_model to crayfish data
+# The crayfish data are stored in two objects `cray34dets` and `cray35dets`. All code and discussion below is based on the cray34 data. Feel free to switch to cray35 data in the code block below and work your way through that.  
+
+# Let's have a closer look at the detection data.
+dat_cray <- data.table(cray34dets)
+dat_cray
+
+# These data also need a bit tidying up before they are ready. Basically, this process is the same as above.
+colnames(dat_cray) <- c('ts','epofrac','tag', 'data','protocol','snr','serial')
+setorder(dat_cray, cols=ts)
+dat_cray[, epo:=floor(epofrac)]
+dat_cray[, frac:=epofrac - epo]
+dat_cray <- dat_cray[protocol=='S256-69kHz']
+dat_cray <- dat_cray[ts >= '2016-01-01'] 
+
+# First, we get an overview of how much data we have got. This code count number of detected pings per hydro per hour. Not exactly an impressive amount of data in this case.
+dat_cray[ , day:=floor_date(ts, unit="day")]
+dat_cray[ , hour:=floor_date(ts, unit="hour")]
+temp1 <- dat_cray[, .N, by=c('tag' ,'serial', 'hour')]
+
+ggplot(data=temp1, aes(x=hour, y=factor(serial))) + geom_tile(aes(fill=N)) + facet_grid(tag~.) + scale_fill_viridis()
+
+# We apply the sync model
+dat_cray_sync <- applySync(toa=dat_cray, hydros=hydros, sync_model)
+dat_cray_sync
+
+# Some detectins are from the first period we discarded - NA in column eposync. We get rid of these and add two extra columns
+dat_cray_sync <- dat_cray_sync[!is.na(eposync)]
+dat_cray_sync[, sync:= eposync - epofrac]
+dat_cray_sync[, sync_frac:= eposync - floor(eposync)]
+
+# Look at the milli-second (frac) before and after sync...
+ggplot(data=dat_cray_sync[ts <= '2016-08-30']) + geom_point(aes(x=ts, y=frac, col=factor(serial)), pch=20) + facet_grid(tag~. )
+ggplot(data=dat_cray_sync[ts <= '2016-08-30']) + geom_point(aes(x=ts, y=sync_frac, col=factor(serial)), pch=20) + facet_grid(tag~.)
+
+# This is a moving animal, so line are not as straight as for the sync tags.
+
+# Estimating tracks using `yaps`
+hydros_yaps <- hydros[, c('x','y','z')]
+colnames(hydros_yaps) <- c('hx','hy','hz')
+
+toa_all <- getToaYaps(synced_dat=dat_cray_sync, hydros=hydros, rbi_min=170, rbi_max=310)
+nobs_all <- apply(toa_all, 1, function(k) sum(!is.na(k)))
+nobs100_all <- runmean(nobs_all, 100)
+
+plot(nobs_all)
+lines(nobs100_all, col="red")
+
+table(nobs_all)
+sum(nobs_all >= 3) / nrow(toa_all)
+
+toa <- toa_all[2501:3500, ]
+matplot(toa[,4] - toa)
+
+nobs <- apply(toa, 1, function(k) sum(!is.na(k)))
+nobs100 <- runmean(nobs, 100)
+
+
+table(nobs)
+sum(nobs >= 3) / nrow(toa)
+
+nobs <- apply(toa, 1, function(k) sum(!is.na(k)))
+nobs100 <- runmean(nobs, 100)
+
+plot(nobs)
+lines(nobs100, col="red")
+
+head(toa)
+tail(toa)
+
+
+ping_type <- "rbi"
+rbi_min <- 170
+rbi_max <- 310
+# Compile all input data needed for yaps
+inp_cray <- getInp(hydros_yaps, toa, E_dist="t", n_ss=1, pingType=ping_type, 
+    sdInits=1, rbi_min=rbi_min, rbi_max=rbi_max, ss_data_what="est", ss_data=0)
+# Run yaps to obtain estimated track
+yaps_out_cray <- runYaps(inp_cray, silent=TRUE, maxIter=500)
+
+
+
+## Basic plotting of estimated track
+# plot the estimated track
+plotYaps(inp=inp_cray, yaps_out=yaps_out_cray, type="map")
+lines(UtmY.no ~ UtmX.ea , data=cray34pin, lty=2)
+
+
+par(mfrow=c(3,1))
+nobs <- apply(toa, 1, function(k) sum(!is.na(k)))
+nobs100 <- runmean(nobs, 100)
+
+plot(nobs)
+lines(nobs100, col="red")
+
+plotYaps(inp=inp_cray, yaps_out=yaps_out_cray, type="coord_X")
+lines(UtmX.ea~as.numeric(Time..UTC.) , data=cray34pin, lty=2)
+
+plotYaps(inp=inp_cray, yaps_out=yaps_out_cray, type="coord_Y")
+lines(UtmY.no~as.numeric(Time..UTC.) , data=cray34pin, lty=2)
+
+
+
+## Running yaps on the whole track?
+nobs <- apply(toa_all, 1, function(k) sum(!is.na(k)))
+nobs100 <- runmean(nobs, 100)
+
+plot(nobs)
+lines(nobs100, col="red")
+
+
+
+# Hmmm - long period with zero detections (~1500 : ~2200) and long period with overall very low detections. It might be possible to run yaps on the entire track, but a better strategy would probably be to split the data - especially around ping 2000 and ignore the empty blocks.  
+# For the brave, the code below will attempt to estimate the entire track, but be aware, that it will most probably take many attempts to succeed. You might want to increase maxIter.
+
+# rbi_min <- 170
+# rbi_max <- 310
+# inp_cray <- getInp(hydros_yaps, toa_all, E_dist="t", n_ss=5, pingType="rbi", 
+    # sdInits=1, rbi_min=rbi_min, rbi_max=rbi_max, ss_data_what="est", ss_data=0)
+# yaps_out_cray <- runYaps(inp_cray, silent=TRUE, maxIter=500)
+
+
+
+# Summary
+# * The crayfish data had a few real world issues, that needed to be handled before the sync_model was optimized.
+# * At least part of the track of crayfish 34 could be estimated and resulted in a seamingly meaningfull track with associated error estimates. The resulting track is not impressive, but it is to be expected based on the characteristics of the used system: PPM-based, unkwon burst interval sequence and very long burst intervals.
+# * If the tags used in this study had been produced a few weeks later, their firmware would have been a newer version and we would have had the option to reconstruct the between ping intervals and use this information in the track estimation. Having this information greatly improves the ability of `yaps` to estimate tracks more precisely and for periods with sparse detections. This is covered in part 3.
+
