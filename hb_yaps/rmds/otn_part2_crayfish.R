@@ -132,6 +132,7 @@ n_offset_day <- 1
 n_ss_day <- 1
 keep_rate <- 0.25
 
+set.seed(42)
 inp_sync <- getInpSync(sync_dat=cray, max_epo_diff, min_hydros, time_keeper_idx, 
     fixed_hydros_idx, n_offset_day, n_ss_day, keep_rate=keep_rate)
 
@@ -177,7 +178,6 @@ dat_sync <- dat_sync[!(tag==47 & serial == 146)]
 ggplot(data=temp2[tag==47 & serial==149]) + geom_point(aes(x=ts, y=frac), pch=20)
 
 # Very sparse - basically not enough data to be usefull. A future function in `yaps` is aimed at catching this before fitting the sync model.
-
 dat_sync <- dat_sync[!(tag==47 & serial == 149)]
 
 
@@ -185,6 +185,7 @@ dat_sync <- dat_sync[!(tag==47 & serial == 149)]
 detections <- dat_sync[ts < '2016-10-01', c('ts', 'tag', 'epo', 'frac', 'serial')]
 cray <- list(detections=detections, hydros=hydros)
 
+set.seed(42)
 inp_sync <- getInpSync(sync_dat=cray, max_epo_diff, min_hydros, time_keeper_idx, 
     fixed_hydros_idx, n_offset_day, n_ss_day, keep_rate=keep_rate)
 sync_model <- getSyncModel(inp_sync, silent=TRUE, fine_tune=FALSE)
@@ -283,7 +284,7 @@ lines(nobs100, col="red")
 head(toa)
 tail(toa)
 
-
+set.seed(12)
 ping_type <- "rbi"
 rbi_min <- 170
 rbi_max <- 310
@@ -291,7 +292,7 @@ rbi_max <- 310
 inp_cray <- getInp(hydros_yaps, toa, E_dist="t", n_ss=1, pingType=ping_type, 
     sdInits=1, rbi_min=rbi_min, rbi_max=rbi_max, ss_data_what="est", ss_data=0)
 # Run yaps to obtain estimated track
-yaps_out_cray <- runYaps(inp_cray, silent=TRUE, maxIter=500)
+yaps_out_cray <- runYaps(inp_cray, silent=FALSE, maxIter=1000)
 
 
 
@@ -320,6 +321,7 @@ lines(UtmY.no~as.numeric(Time..UTC.) , data=cray34pin, lty=2)
 nobs <- apply(toa_all, 1, function(k) sum(!is.na(k)))
 nobs100 <- runmean(nobs, 100)
 
+par(mfrow=c(1,1))
 plot(nobs)
 lines(nobs100, col="red")
 

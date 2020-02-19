@@ -101,6 +101,7 @@ plotNobs(toa_tow)
 
 
 ### Get `inp` and run YAPS
+set.seed(42)
 inp_tow <- getInp(toa=toa_tow, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType="sbi", sdInits=1, ss_data_what="est", ss_data=0, biTable=NULL)
 yaps_tow <- runYaps(inp_tow, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
@@ -136,23 +137,22 @@ matplot(t((yaps_tow$rep$mu_toa - inp_tow$datTmb$toa))*1460, ylab="TOA residuals 
 # Looks good, but this data set is highly saturated! To showcase the benefit of fixed burst interval, we downsample and re-run `yaps`
 plotNobs(toa_tow)
 
+set.seed(12)
 max_hydro <- 3
 toa_tow3<- downSampleToa(toa_tow, max_hydro)
 
 inp_tow3 <- getInp(toa=toa_tow3, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType="sbi", sdInits=1, ss_data_what="est", ss_data=0, biTable=NULL)
-yaps_tow3 <- runYaps(inp_tow3, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
+yaps_tow3 <- runYaps(inp_tow3, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 plotYaps(inp_tow3, yaps_tow3, xlim=c(520500, 521500), ylim=c(6247400, 6247800))
 lines(Y~X, data=gps, lty=2)
-
-plotYaps(inp_tow3, yaps_tow3, type="coord_X")
-plotYaps(inp_tow3, yaps_tow3, type="coord_Y")
 
 
 ### Tag 5138 tow track - downsampling max_hydro <- 1
 # For fixed burst interval transmitters, we can go really low on detections.
 plotNobs(toa_tow)
 
+set.seed(123)
 max_hydro <- 1
 toa_tow1<- downSampleToa(toa_tow, max_hydro)
 
@@ -161,10 +161,6 @@ yaps_tow1 <- runYaps(inp_tow1, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TR
 
 plotYaps(inp_tow1, yaps_tow1, xlim=c(520500, 521500), ylim=c(6247400, 6247800))
 lines(Y~X, data=gps, lty=2)
-
-plotYaps(inp_tow1, yaps_tow1, type="coord_X")
-plotYaps(inp_tow1, yaps_tow1, type="coord_Y")
-
 
 ### Comparing standard errors of position estimates
 par(mfrow=c(2,2))
@@ -218,6 +214,7 @@ plotNobs(toa1335_rbi_yaps)
 
 
 ### Get inp and run YAPS
+set.seed(12)
 ping_type <- 'rbi'
 inp1335_rbi <- getInp(toa=toa1335_rbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=NULL)
 inp1335_rbi$inits[1] <- rnorm(1, 1, 1)
@@ -242,9 +239,6 @@ plot(yaps1335_rbi$plsd$Y, type="h")
 # estimated speed of sound - sanity check
 yaps1335_rbi$pl$ss
 getSS(temp=c(15, 17))
-
-# look at the residual
-matplot(t((yaps1335_rbi$rep$mu_toa - inp1335_rbi$datTmb$toa))*1460, ylab="TOA residuals (m)")
 
 
 ## Tag 1335 - pike - random BI - utilizing **known** sequence
@@ -281,8 +275,10 @@ plotNobs(toa1335_kbi_yaps)
 
 ### Get inp and run YAPS
 # Note, that ping_type now is `'pbi'`and we include the BItable in `getInp()`. Everything else is the same as above.
+set.seed(42)
 inp1335_kbi <- getInp(toa=toa1335_kbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1335)
-inp1335_kbi$inits[1] <- 1
+
+inp1335_kbi$inits[1] <- 1 # new initial value for fish diffusivity
 yaps1335_kbi <- runYaps(inp1335_kbi, maxIter=500, getPlsd=TRUE, getRep=TRUE, silent=TRUE)
 
 ### Results
@@ -305,15 +301,11 @@ plot(yaps1335_kbi$plsd$Y, type="h")
 yaps1335_kbi$pl$ss
 getSS(temp=c(15, 17))
 
-# look at the residual
-matplot(t((yaps1335_kbi$rep$mu_toa - inp1335_kbi$datTmb$toa))*1460, ylab="TOA residuals (m)")
-
-
-
 ### Tag 1335 pike - downsampling max_hydro <- 3
 # Knowing the burst interval sequence, gives opportunity to estimate tracks even when data density is low.
 ping_type <- 'pbi'
 
+set.seed(42)
 plotNobs(toa1335_kbi_yaps)
 max_hydro <- 3
 toa1335_kbi_down3 <- downSampleToa(toa1335_kbi_yaps, max_hydro)
@@ -336,6 +328,7 @@ ping_type <- 'pbi'
 
 plotNobs(toa1335_kbi_yaps)
 max_hydro <- 1
+set.seed(42)
 toa1335_kbi_down1 <- downSampleToa(toa1335_kbi_yaps, max_hydro)
 
 inp1335_kbi_down1 <- getInp(toa=toa1335_kbi_down1, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1335)
@@ -351,9 +344,9 @@ plotYaps(inp1335_kbi_down1, yaps1335_kbi_down1, type="coord_Y")
 ### Comparing secret vs known BI sequences
 par(mfrow=c(2,3))
 ylim=c(0,5)
-plot(yaps1335_kbi$plsd$X, type="h", ylim=ylim)
-plot(yaps1335_kbi_down1$plsd$X, type="h", ylim=ylim)
-plot(yaps1335_rbi$plsd$X, type="h", ylim=ylim)
+plot(yaps1335_kbi$plsd$X, type="h", ylim=ylim, main="known BI")
+plot(yaps1335_kbi_down1$plsd$X, type="h", ylim=ylim, main="known BI \n max_hydro = 1")
+plot(yaps1335_rbi$plsd$X, type="h", ylim=ylim, main= "secret BI" )
 plot(yaps1335_kbi$plsd$Y, type="h", ylim=ylim)
 plot(yaps1335_kbi_down1$plsd$Y, type="h", ylim=ylim)
 plot(yaps1335_rbi$plsd$Y, type="h", ylim=ylim)
@@ -428,27 +421,31 @@ sum(nobs>=3) / length(nobs)
 # looks a bit more challenging than 1335
 
 # get inp to feed into YAPS and run YAPS
+set.seed(42)
 inp1315_rbi <- getInp(toa=toa1315_rbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=NULL)
 inp1315_rbi$inits[1] <- 1
 yaps1315_rbi <- runYaps(inp1315_rbi, maxIter=1000, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 
 # basic plotting
+plotYaps(inp1315_rbi, yaps1315_rbi)
 plotYaps(inp1315_rbi, yaps1315_rbi, type="coord_X")
 plotYaps(inp1315_rbi, yaps1315_rbi, type="coord_Y")
-plotYaps(inp1315_rbi, yaps1315_rbi)
 
 # uncertainties... standard error of position estimates
+par(mfrow=c(3,1))
 plot(yaps1315_rbi$plsd$X, type="l")
 plot(yaps1315_rbi$plsd$Y, type="l")
 plotNobs(toa1315_rbi_yaps)
+par(mfrow=c(1,1))
 
 # estimated speed of sound - sanity check
 yaps1315_rbi$pl$ss
 
 
 ## Tag 1315 - pike - random BI - utilizing **known** sequence
-
+## Tag 1315 - pike - random BI - utilizing **known** sequence
+## Tag 1315 - pike - random BI - utilizing **known** sequence
 ping_type <- 'pbi'
 seq1315 <- hald$burst_seqs$seq1315 # just a long sequence of random numbers...
 
@@ -472,15 +469,16 @@ plotNobs(toa1315_kbi_yaps)
 sum(getNobs(toa1315_kbi_yaps) >= 3) / nrow(toa1315_kbi_yaps)
 
 # get inp to feed into YAPS and run YAPS
+set.seed(42)
 inp1315_kbi <- getInp(toa=toa1315_kbi_yaps, hydros=hydros_yaps, E_dist="t", n_ss=5, pingType=ping_type, rbi_min=rbi_min, rbi_max=rbi_max, sdInits=1, ss_data_what="est", ss_data=0, biTable=biTable1315)
 inp1315_kbi$inits[1] <- 1
 yaps1315_kbi <- runYaps(inp1315_kbi, maxIter=1000, getPlsd=TRUE, getRep=TRUE, silent=FALSE)
 
 
 # basic plotting
+plotYaps(inp1315_kbi, yaps1315_kbi)
 plotYaps(inp1315_kbi, yaps1315_kbi, type="coord_X")
 plotYaps(inp1315_kbi, yaps1315_kbi, type="coord_Y")
-plotYaps(inp1315_kbi, yaps1315_kbi)
 
 # uncertainties... standard error of position estimates - compare to ping_type = 'rbi'
 par(mfrow=c(2,2))
